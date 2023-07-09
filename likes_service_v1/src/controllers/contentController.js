@@ -1,9 +1,7 @@
 const contentModel = require('../models/contentModel')
 const likeModel = require('../models/likeModel')
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('api_key');
+const smsController = require('./smsController')
 
-// here i can't use any type of key because sendgrid only support the office like emailId..
 
 module.exports = {
     createContent : async (req, res) => {
@@ -52,26 +50,20 @@ module.exports = {
                 return res.status(404).send({ status: false, msg: 'Content not found' })
             }
             await likeModel.findOneAndUpdate({userId: userId, contentId: contentId}, req.body, {upsert: true})
-            console.log(findContent.userId.email)
+            console.log(findContent.userId.phone)
             if (req.body.isLike == true) {
-                let like =  await contentModel.findByIdAndUpdate(contentId, { $inc: { likes: +1 } }, {new: true})
-                console.log(like.likes)
-                if (like.likes >= 100) {
-                    const msg = {
-                        to: findContent.userId.email,  // recipient's email address
-                        from: 'crowdrintu1@gmail.com',  // your email address
-                        subject: 'BIG ACHIEVEMENT',
-                        text: 'Congrats for your 1st 100likes on this content',
-                        html: '<p>Congrats for your 1st 100likes on this content</p>'
-                      };
-                      
-                      sgMail.send(msg).then(() => {
-                            return res.status(200).send({ status: true, msg: 'Msg sent successfully' })
-                        }).catch((error) => {
-                            return res.status(400).send({ status: false, msg: `Error is ${error}` })
-                        });
+                let likeCount =  await contentModel.findByIdAndUpdate(contentId, { $inc: { likes: +1 } }, {new: true})
+                console.log(likeCount.likes)
+                if (likeCount.likes == 100) {
+                    smsController.sendSMS(findContent.userId.phone)
+                    .then(() => {
+                        return res.status(200).send({ status: true,  msg : 'completed 100 likes'})
+                    }).catch((err) => {
+                        return res.status(400).send({ status: false,  error : err})
+                    })
+                } else {
+                    return res.status(200).send({ status: true, msg: 'liked' })
                 }
-                return res.status(200).send({ status: false, msg: 'liked' })
             } else if (req.body.isLike == false) {
                 await contentModel.findByIdAndUpdate(contentId, { $inc: { likes: -1 } })
                 return res.status(200).send({ status: true, msg: 'disliked' })

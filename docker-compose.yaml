@@ -1,0 +1,12 @@
+services:
+   api:
+      build: 
+          context: ./likes_service_v1
+          dockerfile: Dockerfile
+      image: likes_service_v1:1.0.0
+      ports:
+          - "3000:3000"
+      volumes:
+          - ./likes_service_v1:/app
+      environment:
+            MONGO_KEY: EtERzBKu3NLVQlzp

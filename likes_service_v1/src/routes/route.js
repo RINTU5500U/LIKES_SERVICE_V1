@@ -3,8 +3,8 @@ const router = express.Router()
 
 const {createUser, login, updateUser} = require('../controllers/userController')
 const {createContent, updateContent, deleteContent, likeContent} = require('../controllers/contentController')
-const {authentication, authorization} = require('../middlewares/auth')
-const {userValidation, loginValidation, updateUserValidation, contentValidation} = require('../middlewares/validatorMware')
+const {authentication, authorization} = require('../../../src/middlewares/auth')
+const {userValidation, loginValidation, updateUserValidation, contentValidation} = require('../../../src/middlewares/validatorMware')
 
 router.post('/createUser', userValidation, createUser)
 router.post('/login', loginValidation, login)
